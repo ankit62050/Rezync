@@ -11,6 +11,7 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  console.log("CLERK KEY DETECTED AT BUILD TIME:", !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   return (
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <html lang="en">
