@@ -6,7 +6,7 @@ const hanken = Hanken_Grotesk({ subsets: ['latin'], variable: '--font-hanken' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair', style: ['normal', 'italic'] });
 
 export const metadata = {
-  title: 'ResumeX | Professional Resume Links',
+  title: 'Rezync | Professional Resume Links',
   description: 'Upload your resume and get one permanent professional link that always stays updated.',
 };
 

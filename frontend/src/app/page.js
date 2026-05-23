@@ -11,8 +11,8 @@ export default function Home() {
 
   const faqs = [
     {
-      q: "How is resumeX different from sending a PDF?",
-      a: "With resumeX, you share one permanent link. Whenever you upload a better version, that same link always serves your latest resume, so recruiters never open an outdated file."
+      q: "How is Rezync different from sending a PDF?",
+      a: "With Rezync, you share one permanent link. Whenever you upload a better version, that same link always serves your latest resume, so recruiters never open an outdated file."
     },
     {
       q: "Can I keep multiple resumes for different roles?",
@@ -24,7 +24,7 @@ export default function Home() {
     },
     {
       q: "Do I need to resend links after every update?",
-      a: "No. The main advantage of resumeX is that your existing links reflect updates immediately, meaning no resends are ever needed."
+      a: "No. The main advantage of Rezync is that your existing links reflect updates immediately, meaning no resends are ever needed."
     }
   ];
 
@@ -34,7 +34,7 @@ export default function Home() {
       {/* TopNavBar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 py-3 bg-surface/80 backdrop-blur-md shadow-sm border border-outline-variant/30 rounded-full mt-4 mx-auto max-w-5xl transition-all duration-300">
         <Link href="/" className="font-body-md font-bold text-2xl text-primary hover:scale-[1.02] transition-transform duration-200">
-          resume<span className="wordmark-x">X</span>
+          re<span className="wordmark-x">zync</span>
         </Link>
         <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-on-surface-variant">
           <a href="#features" className="hover:text-primary transition-colors">Features</a>
@@ -165,7 +165,7 @@ export default function Home() {
               <span className="absolute top-8 right-8 text-xs font-bold text-on-surface-variant uppercase tracking-widest">Step 03</span>
               <div className="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center font-bold mb-6">03</div>
               <h3 className="font-playfair text-xl font-bold text-primary mb-4">Share Everywhere</h3>
-              <p className="text-on-surface-variant">Use the same ResumeX link on LinkedIn, email, portfolios, and referrals.</p>
+              <p className="text-on-surface-variant">Use the same Rezync link on LinkedIn, email, portfolios, and referrals.</p>
             </div>
 
             <div className="bg-surface-container rounded-[1.5rem] p-8 soft-shadow smooth-hover relative overflow-hidden border border-outline-variant/20">
@@ -182,10 +182,10 @@ export default function Home() {
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="font-playfair text-4xl md:text-6xl text-primary font-bold mb-6 leading-tight">
               Why Recruiters <br />
-              Prefer <span className="font-playfair italic font-normal text-secondary">ResumeX</span>
+              Prefer <span className="font-playfair italic font-normal text-secondary">Rezync</span>
             </h2>
             <p className="text-on-surface-variant text-lg">
-              Google Drive links share files. ResumeX shares your professional profile flow: always current, easier to trust, and built for hiring conversations.
+              Google Drive links share files. Rezync shares your professional profile flow: always current, easier to trust, and built for hiring conversations.
             </p>
           </div>
 
@@ -193,7 +193,7 @@ export default function Home() {
             <div className="grid grid-cols-3 border-b border-outline-variant/20 bg-surface-container-high/50 p-6 text-sm font-semibold">
               <div className="text-secondary uppercase tracking-widest">Comparison</div>
               <div className="text-secondary uppercase tracking-widest">Google Drive Link</div>
-              <div className="text-secondary uppercase tracking-widest font-bold">ResumeX Link</div>
+              <div className="text-secondary uppercase tracking-widest font-bold">Rezync Link</div>
             </div>
 
             <div className="grid grid-cols-3 border-b border-outline-variant/20 p-6 items-center text-sm font-medium">
@@ -296,7 +296,7 @@ export default function Home() {
             
             <div className="md:col-span-2">
               <Link href="/" className="font-body-md font-bold text-2xl text-primary mb-4 block">
-                resume<span className="wordmark-x text-3xl">X</span>
+                re<span className="wordmark-x text-3xl">zync</span>
               </Link>
               <p className="text-on-surface-variant max-w-xs text-sm leading-relaxed">
                 The modern way to share your professional story. One link, always current, powered by insights.
@@ -321,7 +321,7 @@ export default function Home() {
 
           <div className="border-t border-outline-variant/20 pt-12">
             <div className="text-[12vw] leading-none font-bold text-primary/5 tracking-tighter text-center select-none font-playfair">
-              resume<span className="font-playfair italic font-normal text-secondary/20">X</span>
+              re<span className="font-playfair italic font-normal text-secondary/20">zync</span>
             </div>
           </div>
 
@@ -330,7 +330,7 @@ export default function Home() {
               <a href="#" className="hover:text-primary">Privacy Policy</a>
               <a href="#" class="hover:text-primary">Terms of Service</a>
             </div>
-            <span>&copy; {new Date().getFullYear()} resumeX. All rights reserved. Crafted for better first impressions.</span>
+            <span>&copy; {new Date().getFullYear()} Rezync. All rights reserved. Crafted for better first impressions.</span>
           </div>
         </div>
       </footer>

@@ -111,7 +111,7 @@ export default function UploadResume() {
               <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Custom Slug</label>
               <div className="flex rounded-xl shadow-sm overflow-hidden">
                 <span className="inline-flex items-center px-4 border border-r-0 border-outline-variant/30 bg-surface-container-low text-on-surface-variant font-bold text-xs uppercase tracking-wider">
-                  resumex.com/p/
+                  rezync.com/[username]/
                 </span>
                 <input 
                   type="text" 

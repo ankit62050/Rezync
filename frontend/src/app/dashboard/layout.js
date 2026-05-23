@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }) {
           {/* Brand */}
           <div className="px-2">
             <Link href="/" className="font-body-md font-bold text-2xl text-primary inline-flex items-baseline hover:scale-[1.02] transition-transform">
-              resume<span className="wordmark-x">X</span>
+              re<span className="wordmark-x">zync</span>
             </Link>
           </div>
           
