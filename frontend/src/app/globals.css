@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-playfair: var(--font-playfair), "Playfair Display", serif;
+  --font-hanken: var(--font-hanken), "Hanken Grotesk", sans-serif;
+  
+  --color-primary: #0a0708;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #231f20;
+  --color-on-primary-container: #8d8687;
+  
+  --color-secondary: #6f5b3d;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fadfb7;
+  --color-on-secondary-container: #756142;
+  
+  --color-tertiary: #0a0802;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #232015;
+  --color-on-tertiary-container: #8c8779;
+  
+  --color-background: #fcf9f1;
+  --color-on-background: #1c1c17;
+  
+  --color-surface: #fcf9f1;
+  --color-on-surface: #1c1c17;
+  --color-on-surface-variant: #4c4547;
+  
+  --color-surface-container: #f1eee6;
+  --color-surface-container-high: #ebe8e0;
+  --color-surface-container-highest: #e5e2da;
+  --color-surface-container-low: #f6f3eb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-dim: #dcdad2;
+  --color-inverse-surface: #31312b;
+  --color-inverse-on-surface: #f3f1e9;
+  
+  --color-outline: #7e7577;
+  --color-outline-variant: #cfc4c6;
+  
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+:root {
+  --background: #fcf9f1;
+  --foreground: #1c1c17;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-hanken);
+}
+
+.wordmark-x {
+  font-family: var(--font-playfair);
+  font-style: italic;
+  color: #6f5b3d; /* burnished gold */
+  font-size: 1.2em;
+}
+
+.font-playfair {
+  font-family: var(--font-playfair);
+}
+
+.soft-shadow {
+  box-shadow: 0 20px 40px -10px rgba(111, 91, 61, 0.08);
+}
+
+.glass-panel {
+  background: rgba(245, 242, 234, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(207, 196, 198, 0.3);
+}
+
+.smooth-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.smooth-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 30px 50px -12px rgba(111, 91, 61, 0.12);
+}

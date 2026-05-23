@@ -1,0 +1,29 @@
+# Node dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Production build output
+build/
+dist/
+
+# Environment files (MUST NOT BE COMMITTED)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local.php
+
+# IDEs and OS files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

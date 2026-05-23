@@ -1,0 +1,35 @@
+const express = require('express');
+const { requireAuthMiddleware, syncUser } = require('../middlewares/authMiddleware');
+const { upload } = require('../middlewares/uploadMiddleware');
+const {
+  uploadResume,
+  getMyResumes,
+  getResumeBySlug,
+  updateResume,
+  deleteResume,
+  getResumeById,
+  checkSlugAvailability,
+  setActiveVersion,
+  updateVersionNote,
+  deleteVersion,
+} = require('../controllers/resumeController');
+
+const router = express.Router();
+
+router.get('/p/:slug', getResumeBySlug);
+
+router.use(requireAuthMiddleware, syncUser);
+
+router.post('/', upload.single('file'), uploadResume);
+router.get('/', getMyResumes);
+router.get('/check-slug/:slug', checkSlugAvailability);
+router.get('/:id', getResumeById);
+router.put('/:id', upload.single('file'), updateResume);
+router.delete('/:id', deleteResume);
+
+// Version history actions
+router.patch('/:id/versions/:versionId/active', setActiveVersion);
+router.patch('/:id/versions/:versionId/note', updateVersionNote);
+router.delete('/:id/versions/:versionId', deleteVersion);
+
+module.exports = router;
