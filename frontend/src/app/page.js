@@ -3,11 +3,15 @@
 import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
 import { RefreshCw, Eye, Link2, Files, ChevronRight, Check, X, ArrowRight, HelpCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const { isLoaded, userId } = useAuth();
   const [activeFaq, setActiveFaq] = useState(0);
+
+  useEffect(() => {
+    console.log("CLIENT-SIDE CLERK KEY:", process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  }, []);
 
   const faqs = [
     {
