@@ -47,7 +47,7 @@ const LinkedinIcon = ({ size = 16 }) => (
 );
 
 export default function PublicResumePage() {
-  const { slug } = useParams();
+  const { username, slug } = useParams();
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
