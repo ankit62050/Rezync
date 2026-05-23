@@ -121,7 +121,7 @@ export default function ResumeWorkspacePage() {
 
   const handleCopy = async () => {
     if (!resume) return;
-    const fullUrl = `${origin}/p/${resume.slug}`;
+    const fullUrl = `${origin}/${username}/${resume.slug}`;
     try {
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
@@ -266,7 +266,7 @@ export default function ResumeWorkspacePage() {
     );
   }
 
-  const fullUrl = `${origin}/p/${resume.slug}`;
+  const fullUrl = `${origin}/${username}/${resume.slug}`;
 
   return (
     <div className="flex flex-col w-full bg-surface">

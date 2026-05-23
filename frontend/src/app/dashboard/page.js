@@ -132,7 +132,7 @@ export default function Dashboard() {
               >
                 <div className="flex flex-col gap-1">
                   <h3 className="text-xl font-bold text-primary group-hover:text-secondary transition-colors font-playfair">{resume.title}</h3>
-                  <span className="text-sm font-semibold text-on-surface-variant font-mono">/p/{resume.slug}</span>
+                  <span className="text-sm font-semibold text-on-surface-variant font-mono">/{username}/{resume.slug}</span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto sm:justify-end">
@@ -151,7 +151,7 @@ export default function Dashboard() {
                     </Link>
                     
                     <Link 
-                      href={`/p/${resume.slug}`} 
+                      href={`/${username}/${resume.slug}`} 
                       target="_blank" 
                       onClick={(e) => e.stopPropagation()}
                       className="p-2 border border-outline-variant/30 hover:bg-surface-container-high rounded-lg text-primary transition-all flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"

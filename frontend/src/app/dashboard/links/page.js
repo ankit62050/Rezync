@@ -40,7 +40,7 @@ export default function LinksPage() {
   }, [getToken]);
 
   const handleCopy = async (id, slug) => {
-    const url = `${origin}/p/${slug}`;
+    const url = `${origin}/${username}/${slug}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopiedId(id);
@@ -116,7 +116,7 @@ export default function LinksPage() {
             <div className="flex flex-col gap-6">
               {resumes.map((resume) => {
                 const isCopied = copiedId === resume._id;
-                const fullUrl = `${origin}/p/${resume.slug}`;
+                const fullUrl = `${origin}/${username}/${resume.slug}`;
                 return (
                   <div
                     key={resume._id}
