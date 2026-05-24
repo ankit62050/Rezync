@@ -52,6 +52,7 @@ export default function PublicResumePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   useEffect(() => {
     const fetchResume = async () => {
@@ -112,10 +113,11 @@ export default function PublicResumePage() {
         src={resume.resumeUrl}
         className="w-full h-full border-none flex-grow"
         title="Resume PDF"
+        onLoad={() => setIframeLoaded(true)}
       />
 
       {/* Floating Contact Dock */}
-      {hasContactInfo && (
+      {iframeLoaded && hasContactInfo && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[95%] sm:max-w-xl transition-all duration-300">
           {isOpen ? (
             <div className="bg-primary/95 text-on-primary backdrop-blur-md border border-primary-container shadow-2xl rounded-2xl sm:rounded-full px-6 py-3.5 flex flex-col sm:flex-row items-center gap-4 transition-all duration-300 scale-100 opacity-100">
