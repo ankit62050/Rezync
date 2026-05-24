@@ -118,9 +118,17 @@ export default function PublicResumePage() {
 
   return (
     <div className="w-screen h-screen overflow-hidden m-0 p-0 bg-background relative flex flex-col">
+      {/* PDF Loading Overlay */}
+      {!iframeLoaded && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background z-30 transition-opacity duration-300">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
+          <p className="text-xs font-bold text-primary uppercase tracking-widest animate-pulse font-hanken">Loading Resume PDF...</p>
+        </div>
+      )}
+
       <iframe
         src={iframeSrc}
-        className="w-full h-full border-none flex-grow"
+        className={`w-full h-full border-none flex-grow transition-opacity duration-500 ${iframeLoaded ? 'opacity-100' : 'opacity-0'}`}
         title="Resume PDF"
         onLoad={() => setIframeLoaded(true)}
       />
