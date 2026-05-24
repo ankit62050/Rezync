@@ -92,10 +92,70 @@ export default function DashboardLayout({ children }) {
         </div>
       </nav>
 
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface-container-low border-b border-outline-variant/15 flex justify-between items-center px-6 z-40">
+        <Link href="/" className="font-body-md font-bold text-xl text-primary hover:scale-[1.02] transition-transform">
+          re<span className="wordmark-x">zync</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={username} className="w-8 h-8 rounded-full object-cover border border-outline-variant/25 shadow-sm" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-bold text-sm uppercase">
+              {username[0]}
+            </div>
+          )}
+          <SignOutButton>
+            <button className="text-on-surface-variant hover:text-red-600 transition-colors p-1.5 border border-outline-variant/20 rounded-lg bg-surface hover:bg-surface-variant/30 cursor-pointer" title="Sign Out">
+              <LogOut size={16} />
+            </button>
+          </SignOutButton>
+        </div>
+      </div>
+
       {/* Main Content Area */}
-      <main className="md:ml-[280px] flex-grow min-h-screen bg-surface-container-lowest overflow-y-auto">
+      <main className="md:ml-[280px] flex-grow min-h-screen bg-surface-container-lowest overflow-y-auto pt-16 pb-16 md:pt-0 md:pb-0">
         {children}
       </main>
+
+      {/* Mobile Bottom Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container-low border-t border-outline-variant/15 flex justify-around items-center z-40 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <Link 
+          href="/dashboard" 
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
+            pathname === '/dashboard' || pathname.startsWith('/dashboard/edit') || pathname === '/dashboard/upload'
+              ? 'text-primary'
+              : 'text-on-surface-variant/70 hover:text-on-surface-variant'
+          }`}
+        >
+          <FileText size={20} />
+          <span>Resumes</span>
+        </Link>
+
+        <Link 
+          href="/dashboard/links" 
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
+            pathname === '/dashboard/links'
+              ? 'text-primary'
+              : 'text-on-surface-variant/70 hover:text-on-surface-variant'
+          }`}
+        >
+          <Link2 size={20} />
+          <span>Links</span>
+        </Link>
+
+        <Link 
+          href="/dashboard/analytics" 
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-3 rounded-xl transition-all ${
+            pathname === '/dashboard/analytics' || (pathname.startsWith('/dashboard/analytics/') && pathname !== '/dashboard/analytics')
+              ? 'text-primary'
+              : 'text-on-surface-variant/70 hover:text-on-surface-variant'
+          }`}
+        >
+          <BarChart2 size={20} />
+          <span>Analytics</span>
+        </Link>
+      </div>
     </div>
   );
 }
