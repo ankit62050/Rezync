@@ -1,12 +1,13 @@
 'use client';
 
-import { useUser, SignOutButton } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
 import { FileText, Link2, BarChart2, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }) {
   const { user } = useUser();
+  const { signOut } = useClerk();
   const pathname = usePathname();
 
   const username = user?.username || user?.firstName || 'candidate';
@@ -83,12 +84,13 @@ export default function DashboardLayout({ children }) {
               <span className="text-xs text-on-surface-variant truncate max-w-[140px]">@{username}</span>
             </div>
           </div>
-          <SignOutButton>
-            <button className="w-full text-on-surface-variant hover:bg-surface-variant/50 border border-outline-variant/30 rounded-xl px-4 py-3 flex items-center justify-center gap-2 transition-colors cursor-pointer">
-              <LogOut size={16} />
-              <span className="text-sm font-semibold">Sign Out</span>
-            </button>
-          </SignOutButton>
+          <button 
+            onClick={() => signOut({ redirectUrl: '/' })}
+            className="w-full text-on-surface-variant hover:bg-surface-variant/50 border border-outline-variant/30 rounded-xl px-4 py-3 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <LogOut size={16} />
+            <span className="text-sm font-semibold">Sign Out</span>
+          </button>
         </div>
       </nav>
 
@@ -105,11 +107,13 @@ export default function DashboardLayout({ children }) {
               {username[0]}
             </div>
           )}
-          <SignOutButton>
-            <button className="text-on-surface-variant hover:text-red-600 transition-colors p-1.5 border border-outline-variant/20 rounded-lg bg-surface hover:bg-surface-variant/30 cursor-pointer" title="Sign Out">
-              <LogOut size={16} />
-            </button>
-          </SignOutButton>
+          <button 
+            onClick={() => signOut({ redirectUrl: '/' })}
+            className="text-on-surface-variant hover:text-red-600 transition-colors p-1.5 border border-outline-variant/20 rounded-lg bg-surface hover:bg-surface-variant/30 cursor-pointer" 
+            title="Sign Out"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
 
