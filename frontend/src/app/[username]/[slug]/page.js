@@ -53,6 +53,11 @@ export default function PublicResumePage() {
   const [error, setError] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(/Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent));
+  }, []);
 
   useEffect(() => {
     const fetchResume = async () => {
@@ -107,10 +112,14 @@ export default function PublicResumePage() {
 
   const hasContactInfo = resume.contactEmail || resume.linkedinUrl || resume.githubUrl || resume.calendlyUrl;
 
+  const iframeSrc = isMobile
+    ? `https://docs.google.com/gview?url=${encodeURIComponent(resume.resumeUrl)}&embedded=true`
+    : resume.resumeUrl;
+
   return (
     <div className="w-screen h-screen overflow-hidden m-0 p-0 bg-background relative flex flex-col">
       <iframe
-        src={resume.resumeUrl}
+        src={iframeSrc}
         className="w-full h-full border-none flex-grow"
         title="Resume PDF"
         onLoad={() => setIframeLoaded(true)}
