@@ -15,9 +15,11 @@ export default function Dashboard() {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [error, setError] = useState('');
 
   const fetchResumes = async () => {
     setLoading(true);
+    setError('');
     try {
       const token = await getToken();
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -25,8 +27,10 @@ export default function Dashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setResumes(res.data);
-    } catch (error) {
-      console.error('Error fetching resumes:', error);
+    } catch (err) {
+      console.error('Error fetching resumes:', err);
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      setError(`Failed to fetch resumes: ${err.message} (API URL: ${API_URL})`);
     } finally {
       setLoading(false);
     }
@@ -113,6 +117,18 @@ export default function Dashboard() {
             {[1, 2, 3].map(i => (
               <div key={i} className="h-20 bg-surface-container-low rounded-[1.5rem] animate-pulse border border-outline-variant/10"></div>
             ))}
+          </div>
+        ) : error ? (
+          <div className="glass-panel p-8 rounded-[1.5rem] border border-red-200/50 bg-red-50/20 text-center flex flex-col items-center">
+            <span className="material-symbols-outlined text-red-500 text-4xl mb-2">error</span>
+            <h3 className="text-lg font-bold text-red-700 mb-2">Connection Error</h3>
+            <p className="text-red-600 mb-4 max-w-lg text-sm font-semibold">{error}</p>
+            <button 
+              onClick={fetchResumes}
+              className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl transition-all text-xs"
+            >
+              Try Again
+            </button>
           </div>
         ) : resumes.length === 0 ? (
           <div className="glass-panel p-16 rounded-[2.5rem] text-center flex flex-col items-center bg-white/40">

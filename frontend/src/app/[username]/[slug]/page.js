@@ -68,7 +68,8 @@ export default function PublicResumePage() {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        setError(err.response?.data?.message || 'Resume not found');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        setError(err.response?.data?.message || `Failed to connect to backend: ${err.message} (API URL: ${API_URL}/resumes/p/${slug})`);
         setLoading(false);
       }
     };
