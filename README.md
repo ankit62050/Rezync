@@ -7,7 +7,7 @@
 [![Clerk](https://img.shields.io/badge/Auth-Clerk-6C47FF?style=for-the-badge&logo=clerk)](https://clerk.com/)
 [![Cloudinary](https://img.shields.io/badge/Storage-Cloudinary-3448C5?style=for-the-badge&logo=cloudinary)](https://cloudinary.com/)
 
-🔗 **Live Link:** [https://your-rezync-app.vercel.app](https://your-rezync-app.vercel.app)
+🔗 **Live Link:** [https://your-rezync-app.vercel.app](https://rezync.vercel.app)
 
 **Rezync** is a modern, full-stack, smart resume-sharing platform. Instead of sending bulky PDF attachments that get outdated the moment you hit send, Rezync gives you **one permanent, professional link** (`rezync.com/p/your-slug`) that always points to your latest resume, tracks visitor analytics, and supports version history.
 
