@@ -1,4 +1,5 @@
 const Resume = require('../models/Resume');
+const User = require('../models/User');
 const cloudinary = require('../config/cloudinary');
 const Analytics = require('../models/Analytics');
 
@@ -10,7 +11,7 @@ const uploadResume = async (req, res) => {
       return res.status(400).json({ message: 'No resume file uploaded' });
     }
 
-    const existing = await Resume.findOne({ slug });
+    const existing = await Resume.findOne({ userId: req.user._id, slug });
     if (existing) {
       return res.status(400).json({ message: 'Slug already taken' });
     }
@@ -63,8 +64,12 @@ const getMyResumes = async (req, res) => {
 
 const getResumeBySlug = async (req, res) => {
   try {
-    const { slug } = req.params;
-    const resume = await Resume.findOne({ slug }).populate('userId', 'name email');
+    const { username, slug } = req.params;
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const resume = await Resume.findOne({ userId: user._id, slug }).populate('userId', 'name email');
 
     if (!resume) {
       return res.status(404).json({ message: 'Resume not found' });
@@ -152,7 +157,7 @@ const updateResume = async (req, res) => {
     }
 
     if (slug && slug !== resume.slug) {
-      const slugConflict = await Resume.findOne({ slug, _id: { $ne: id } });
+      const slugConflict = await Resume.findOne({ userId: req.user._id, slug, _id: { $ne: id } });
       if (slugConflict) {
         return res.status(400).json({ message: 'Slug already taken' });
       }
@@ -221,7 +226,7 @@ const checkSlugAvailability = async (req, res) => {
     const { slug } = req.params;
     const { excludeId } = req.query;
 
-    const query = { slug };
+    const query = { userId: req.user._id, slug };
     if (excludeId) {
       query._id = { $ne: excludeId };
     }

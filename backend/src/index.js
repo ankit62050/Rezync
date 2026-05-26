@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const connectDB = require('./config/db');
 const resumeRoutes = require('./routes/resumeRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const userRoutes = require('./routes/userRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(express.json());
 
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
   res.send('ResumeX API is running...');

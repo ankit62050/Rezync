@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { useDashboard } from '../../layout';
 import { useRouter, useParams } from 'next/navigation';
 import { Pencil, ArrowLeft, Loader2, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -11,6 +12,7 @@ export default function EditResume() {
   const { id } = useParams();
   const { getToken } = useAuth();
   const router = useRouter();
+  const { username } = useDashboard();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -191,8 +193,8 @@ export default function EditResume() {
             <div>
               <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Custom Slug</label>
               <div className="flex rounded-xl shadow-sm overflow-hidden">
-                <span className="inline-flex items-center px-4 border border-r-0 border-outline-variant/30 bg-surface-container-low text-on-surface-variant font-bold text-xs uppercase tracking-wider">
-                  rezync.com/[username]/
+                <span className="inline-flex items-center px-4 border border-r-0 border-outline-variant/30 bg-surface-container-low text-on-surface-variant font-bold text-xs uppercase tracking-wider font-mono">
+                  rezync.com/{username}/
                 </span>
                 <input 
                   type="text" 

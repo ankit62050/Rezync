@@ -1,20 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import { useDashboard } from '../layout';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, Copy, Check, Link as LinkIcon, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 export default function LinksPage() {
   const { getToken } = useAuth();
-  const { user } = useUser();
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
   const [origin, setOrigin] = useState('');
 
-  const username = user?.username || user?.firstName || 'candidate';
+  const { username } = useDashboard();
 
   const fetchResumes = async () => {
     setLoading(true);

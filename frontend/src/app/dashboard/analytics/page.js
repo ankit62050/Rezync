@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import { useDashboard } from '../layout';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw, BarChart2, Compass, Users, Clock, Globe } from 'lucide-react';
 import axios from 'axios';
@@ -40,11 +41,10 @@ function formatRelativeTime(dateString) {
 
 export default function GlobalAnalyticsPage() {
   const { getToken } = useAuth();
-  const { user } = useUser();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const username = user?.username || user?.firstName || 'candidate';
+  const { username } = useDashboard();
 
   const fetchAnalytics = async () => {
     setLoading(true);

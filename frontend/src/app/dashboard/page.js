@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth, useUser, SignOutButton } from '@clerk/nextjs';
+import { useDashboard } from './layout';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FileText, Eye, Upload, BarChart2, ExternalLink, Trash2, Loader2, Pencil, RefreshCw, ChevronLeft, LogOut, Layout, BookOpen, Link2 } from 'lucide-react';
@@ -61,7 +62,7 @@ export default function Dashboard() {
     }
   };
 
-  const username = user?.username || user?.firstName || 'candidate';
+  const { username } = useDashboard();
   const avatarUrl = user?.imageUrl || '';
 
   return (

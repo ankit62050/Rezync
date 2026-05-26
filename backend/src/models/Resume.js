@@ -14,7 +14,6 @@ const resumeSchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      unique: true,
     },
     role: {
       type: String,
@@ -76,5 +75,7 @@ const resumeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+resumeSchema.index({ userId: 1, slug: 1 }, { unique: true });
 
 module.exports = mongoose.model('Resume', resumeSchema);

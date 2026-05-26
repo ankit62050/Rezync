@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
     },
+    username: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   { timestamps: true }
 );

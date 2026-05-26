@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import { useDashboard } from '../../layout';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Upload, Trash2, Copy, Check, Eye, Loader2, Sparkles, Pencil, FileText } from 'lucide-react';
@@ -10,7 +11,6 @@ import axios from 'axios';
 export default function ResumeWorkspacePage() {
   const { id } = useParams();
   const { getToken } = useAuth();
-  const { user } = useUser();
   const router = useRouter();
 
   const [resume, setResume] = useState(null);
@@ -43,7 +43,7 @@ export default function ResumeWorkspacePage() {
   const [savingCtas, setSavingCtas] = useState(false);
   const [ctaSuccess, setCtaSuccess] = useState(false);
 
-  const username = user?.username || user?.firstName || 'candidate';
+  const { username } = useDashboard();
 
   const fetchResume = async () => {
     try {

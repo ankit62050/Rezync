@@ -63,21 +63,21 @@ export default function PublicResumePage() {
     const fetchResume = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const res = await axios.get(`${API_URL}/resumes/p/${slug}`);
+        const res = await axios.get(`${API_URL}/resumes/p/${username}/${slug}`);
         setResume(res.data);
         setLoading(false);
       } catch (err) {
         console.error(err);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        setError(err.response?.data?.message || `Failed to connect to backend: ${err.message} (API URL: ${API_URL}/resumes/p/${slug})`);
+        setError(err.response?.data?.message || `Failed to connect to backend: ${err.message} (API URL: ${API_URL}/resumes/p/${username}/${slug})`);
         setLoading(false);
       }
     };
 
-    if (slug) {
+    if (username && slug) {
       fetchResume();
     }
-  }, [slug]);
+  }, [username, slug]);
 
   const trackClick = async (eventType) => {
     try {

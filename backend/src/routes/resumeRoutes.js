@@ -16,7 +16,7 @@ const {
 
 const router = express.Router();
 
-router.get('/p/:slug', getResumeBySlug);
+router.get('/p/:username/:slug', getResumeBySlug);
 
 router.use(requireAuthMiddleware, syncUser);
 
