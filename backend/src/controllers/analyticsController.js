@@ -12,9 +12,35 @@ const getResumeAnalytics = async (req, res) => {
 
     const analytics = await Analytics.find({ resumeId: id }).sort({ createdAt: -1 });
     
+    // Aggregate section times
+    const sectionTotals = {};
+    let totalSpent = 0;
+    analytics.forEach(entry => {
+      if (entry.sectionTimes) {
+        for (const [section, duration] of entry.sectionTimes.entries()) {
+          sectionTotals[section] = (sectionTotals[section] || 0) + duration;
+          totalSpent += duration;
+        }
+      }
+    });
+
+    const sectionTimes = Object.entries(sectionTotals).map(([section, duration]) => ({
+      section,
+      duration,
+      percentage: totalSpent > 0 ? Math.round((duration / totalSpent) * 100) : 0
+    })).sort((a, b) => b.duration - a.duration);
+    
     res.json({
       totalViews: resume.views,
+      resume: {
+        title: resume.title,
+        slug: resume.slug,
+        aiScore: resume.aiScore,
+        aiFeedback: resume.aiFeedback
+      },
       analytics,
+      sectionTimes,
+      totalTimeSpent: totalSpent
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -73,8 +99,32 @@ const logContactClick = async (req, res) => {
   }
 };
 
+const updateSectionTimes = async (req, res) => {
+  try {
+    const { analyticsId } = req.params;
+    const { sectionTimes } = req.body;
+
+    const entry = await Analytics.findById(analyticsId);
+    if (!entry) {
+      return res.status(404).json({ message: 'Analytics entry not found' });
+    }
+
+    if (sectionTimes) {
+      for (const [section, duration] of Object.entries(sectionTimes)) {
+        entry.sectionTimes.set(section, duration);
+      }
+      await entry.save();
+    }
+
+    res.json(entry);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getResumeAnalytics,
   getGlobalAnalytics,
   logContactClick,
+  updateSectionTimes,
 };

@@ -96,9 +96,25 @@ export default function AnalyticsDashboard() {
               <Sparkles size={24} fill="currentColor" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-on-surface mb-1">AI Performance Insights</h3>
+              <h3 className="text-lg font-bold text-on-surface mb-1">AI Performance & Viewer Insights</h3>
               <p className="text-sm text-on-surface-variant leading-relaxed max-w-3xl">
-                Your <strong className="text-on-surface font-bold">Experience</strong> section is attracting the most attention, accounting for 45% of total view time. Consider moving your "Technical Skills" higher, as viewers are frequently scrolling directly to it after reading your summary.
+                {data.sectionTimes && data.sectionTimes.length > 0 ? (
+                  <>
+                    Hiring managers spent the most time on your <strong className="text-on-surface font-bold">{data.sectionTimes[0].section}</strong> section, which accounted for <strong className="text-on-surface font-bold">{data.sectionTimes[0].percentage}%</strong> of total view time.
+                    {data.resume?.aiScore ? (
+                      <span> Your AI Resume Score is <strong className="text-secondary font-bold">{data.resume.aiScore}/100</strong>. {data.resume.aiFeedback?.summary || ""}</span>
+                    ) : (
+                      <span> Run an AI audit in the Resume Workspace to get detailed score metrics and tailoring feedback.</span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    No viewer focus details recorded yet. Interactive viewing tracking logs section-level reading time in real-time.
+                    {data.resume?.aiScore && (
+                      <span> Your AI Resume Score is <strong className="text-secondary font-bold">{data.resume.aiScore}/100</strong>. {data.resume.aiFeedback?.summary || ""}</span>
+                    )}
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -194,42 +210,30 @@ export default function AnalyticsDashboard() {
             <span className="text-outline-variant font-bold cursor-pointer hover:text-primary transition-colors">•••</span>
           </div>
           <div className="space-y-6">
-            <div>
-              <div className="flex justify-between text-xs font-bold mb-2">
-                <span className="text-on-surface">Experience Section</span>
-                <span className="text-on-surface-variant">1m 15s (45%)</span>
+            {data.sectionTimes && data.sectionTimes.length > 0 ? (
+              data.sectionTimes.map((item, idx) => (
+                <div key={idx}>
+                  <div className="flex justify-between text-xs font-bold mb-2">
+                    <span className="text-on-surface">{item.section}</span>
+                    <span className="text-on-surface-variant">
+                      {item.duration >= 60 
+                        ? `${Math.floor(item.duration / 60)}m ${item.duration % 60}s` 
+                        : `${item.duration}s`} ({item.percentage}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-surface-container rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-500" 
+                      style={{ width: `${item.percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 text-xs text-on-surface-variant font-semibold">
+                No section viewing time recorded yet. Interactive viewing tracking logs section-level reading time in real-time.
               </div>
-              <div className="w-full bg-surface-container rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full w-[45%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-bold mb-2">
-                <span className="text-on-surface">Summary Summary</span>
-                <span className="text-on-surface-variant">45s (27%)</span>
-              </div>
-              <div className="w-full bg-surface-container rounded-full h-2">
-                <div className="bg-primary/70 h-2 rounded-full w-[27%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-bold mb-2">
-                <span className="text-on-surface">Core Skills</span>
-                <span className="text-on-surface-variant">30s (18%)</span>
-              </div>
-              <div className="w-full bg-surface-container rounded-full h-2">
-                <div className="bg-secondary h-2 rounded-full w-[18%]"></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-xs font-bold mb-2">
-                <span className="text-on-surface">Education Highlight</span>
-                <span className="text-on-surface-variant">15s (10%)</span>
-              </div>
-              <div className="w-full bg-surface-container rounded-full h-2">
-                <div className="bg-primary/40 h-2 rounded-full w-[10%]"></div>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 

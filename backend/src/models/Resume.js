@@ -72,6 +72,41 @@ const resumeSchema = new mongoose.Schema(
         },
       },
     ],
+    aiScore: {
+      type: Number,
+      default: null,
+    },
+    aiFeedback: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    sections: [
+      {
+        title: String,
+        content: String,
+      }
+    ],
+    campaigns: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        jobDescription: String,
+        tailoredScore: Number,
+        tailoredFeedback: mongoose.Schema.Types.Mixed,
+        tailoredSections: [
+          {
+            title: String,
+            content: String,
+          }
+        ],
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        }
+      }
+    ]
   },
   { timestamps: true }
 );

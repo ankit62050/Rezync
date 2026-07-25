@@ -35,13 +35,22 @@ export default function ResumeWorkspacePage() {
   const [activatingVersionId, setActivatingVersionId] = useState(null);
   const [deletingVersionId, setDeletingVersionId] = useState(null);
 
-  // Recruiter CTA Link States
   const [contactEmail, setContactEmail] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [githubUrl, setGithubUrl] = useState('');
   const [calendlyUrl, setCalendlyUrl] = useState('');
   const [savingCtas, setSavingCtas] = useState(false);
   const [ctaSuccess, setCtaSuccess] = useState(false);
+
+  // AI Career Suite State
+  const [analyzing, setAnalyzing] = useState(false);
+  const [tailoring, setTailoring] = useState(false);
+  const [campaignName, setCampaignName] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [isTailoringModalOpen, setIsTailoringModalOpen] = useState(false);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [copiedCampaignId, setCopiedCampaignId] = useState(null);
 
   const { username } = useDashboard();
 
@@ -107,6 +116,80 @@ export default function ResumeWorkspacePage() {
       setError(err.response?.data?.message || 'Failed to update CTA settings');
     } finally {
       setSavingCtas(false);
+    }
+  };
+
+  const handleRunAIAnalysis = async () => {
+    setAnalyzing(true);
+    setError('');
+    try {
+      const token = await getToken();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.post(`${API_URL}/resumes/${id}/analyze`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setResume(res.data);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to run AI audit');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleCreateCampaign = async (e) => {
+    e.preventDefault();
+    if (!campaignName || !jobDescription) return;
+    setTailoring(true);
+    setError('');
+    try {
+      const token = await getToken();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.post(`${API_URL}/resumes/${id}/campaigns`, {
+        name: campaignName,
+        jobDescription
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setResume(res.data);
+      setIsTailoringModalOpen(false);
+      setCampaignName('');
+      setJobDescription('');
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to create campaign');
+    } finally {
+      setTailoring(false);
+    }
+  };
+
+  const handleDeleteCampaign = async (campaignId) => {
+    if (!confirm('Are you sure you want to delete this campaign? The link will stop working.')) return;
+    setError('');
+    try {
+      const token = await getToken();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.delete(`${API_URL}/resumes/${id}/campaigns/${campaignId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setResume(res.data);
+      if (selectedCampaign?._id === campaignId) {
+        setSelectedCampaign(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to delete campaign');
+    }
+  };
+
+  const handleCopyCampaignLink = async (campaign) => {
+    const fullLink = `${origin}/${username}/${resume.slug}?ref=${campaign.name}`;
+    try {
+      await navigator.clipboard.writeText(fullLink);
+      setCopiedCampaignId(campaign._id);
+      setTimeout(() => setCopiedCampaignId(null), 2000);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -310,6 +393,135 @@ export default function ResumeWorkspacePage() {
               >
                 {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
               </button>
+            </div>
+          </div>
+
+          {/* AI Career Suite Card */}
+          <div className="glass-panel p-6 rounded-2xl border border-outline-variant/20 bg-surface-container-low shadow-xs flex flex-col gap-6">
+            <div className="flex items-center gap-2 border-b border-outline-variant/10 pb-3">
+              <Sparkles className="text-secondary" size={20} fill="currentColor" />
+              <h3 className="text-lg font-bold text-primary font-playfair uppercase tracking-wider">AI Career Suite</h3>
+            </div>
+
+            {/* Part A: Resume Analyzer Audits */}
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-extrabold text-on-surface-variant tracking-wider uppercase">AI Resume Audit</h4>
+              {resume.aiScore !== null && resume.aiScore !== undefined ? (
+                <div className="flex items-center justify-between bg-surface rounded-xl p-4 border border-outline-variant/15">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-secondary/15 flex items-center justify-center font-bold text-secondary text-lg">
+                      {resume.aiScore}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-primary">Audit Score</span>
+                      <span className="text-[10px] text-on-surface-variant font-medium">Out of 100 points</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsAuditModalOpen(true)}
+                      className="px-3 py-1.5 bg-secondary text-on-secondary rounded-lg text-[10px] font-bold hover:opacity-90 transition-all cursor-pointer"
+                    >
+                      Report
+                    </button>
+                    <button
+                      onClick={handleRunAIAnalysis}
+                      disabled={analyzing}
+                      className="px-3 py-1.5 border border-outline-variant/30 text-on-surface-variant rounded-lg text-[10px] font-bold hover:bg-surface-variant/20 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {analyzing ? <Loader2 className="animate-spin animate-duration-1000" size={10} /> : 'Re-run'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 bg-surface rounded-xl p-4 border border-outline-variant/15">
+                  <p className="text-xs text-on-surface-variant font-medium italic">
+                    Analyze your resume structure, content, and phrasing. Generate detailed feedback.
+                  </p>
+                  <button
+                    onClick={handleRunAIAnalysis}
+                    disabled={analyzing}
+                    className="w-full py-2.5 bg-secondary text-on-secondary rounded-xl text-xs font-bold hover:opacity-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    {analyzing ? <Loader2 className="animate-spin" size={14} /> : <Sparkles size={14} />}
+                    <span>{analyzing ? 'Running Audit...' : 'Run AI Audit'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Part B: Tailored Campaigns */}
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-between items-center">
+                <h4 className="text-xs font-extrabold text-on-surface-variant tracking-wider uppercase">Tailored Campaigns</h4>
+                <button
+                  onClick={() => setIsTailoringModalOpen(true)}
+                  className="text-[10px] font-extrabold text-secondary hover:text-primary transition uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                >
+                  + Add Campaign
+                </button>
+              </div>
+
+              {resume.campaigns && resume.campaigns.length > 0 ? (
+                <div className="flex flex-col gap-2 max-h-[25vh] overflow-y-auto pr-1">
+                  {resume.campaigns.map((campaign) => (
+                    <div
+                      key={campaign._id}
+                      className="flex flex-col gap-2 bg-surface rounded-xl p-3 border border-outline-variant/15 hover:border-outline-variant/30 transition-all"
+                    >
+                      <div className="flex justify-between items-center w-full">
+                        <span className="text-xs font-bold text-primary uppercase font-mono">
+                          ?ref={campaign.name}
+                        </span>
+                        {campaign.tailoredScore && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-secondary/15 text-secondary">
+                            {campaign.tailoredScore}% Match
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between items-center gap-4">
+                        <span className="text-[10px] text-on-surface-variant font-medium italic truncate max-w-[120px]">
+                          Target: {campaign.name.toUpperCase()}
+                        </span>
+                        
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleCopyCampaignLink(campaign)}
+                            className="p-1.5 border border-outline-variant/25 hover:bg-white rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                            title="Copy Campaign Link"
+                          >
+                            {copiedCampaignId === campaign._id ? (
+                              <Check size={11} className="text-green-600" />
+                            ) : (
+                              <Copy size={11} />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedCampaign(campaign);
+                            }}
+                            className="px-2 py-1.5 bg-primary text-on-primary rounded-md text-[9px] font-bold hover:opacity-90 transition-colors cursor-pointer"
+                          >
+                            Feedback
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCampaign(campaign._id)}
+                            className="p-1.5 border border-outline-variant/25 hover:bg-red-50 text-on-surface-variant hover:text-red-600 transition-colors rounded-md cursor-pointer"
+                            title="Delete Campaign"
+                          >
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-on-surface-variant font-medium italic bg-surface/40 p-3 rounded-xl border border-dashed border-outline-variant/25">
+                  No tailored campaigns created. Click "+ Add Campaign" to tailor your profile for specific jobs.
+                </p>
+              )}
             </div>
           </div>
 
@@ -589,6 +801,231 @@ export default function ResumeWorkspacePage() {
               >
                 {uploading ? <Loader2 className="animate-spin" size={14} /> : null}
                 <span>{uploading ? 'Uploading...' : 'Upload'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* AI Audit Details Modal */}
+      {isAuditModalOpen && resume.aiFeedback && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-surface-container max-w-lg w-full rounded-[2rem] p-8 border border-outline-variant/30 shadow-2xl flex flex-col gap-5 relative max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-outline-variant/10 pb-3">
+              <h3 className="text-2xl font-bold text-primary font-playfair flex items-center gap-2">
+                <Sparkles className="text-secondary" size={24} fill="currentColor" />
+                AI Audit Report
+              </h3>
+              <button onClick={() => setIsAuditModalOpen(false)} className="p-1 hover:bg-surface-variant/20 rounded-full cursor-pointer text-on-surface-variant">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 bg-secondary/10 px-5 py-4 rounded-2xl border border-secondary/20">
+              <div className="w-14 h-14 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-2xl shrink-0">
+                {resume.aiScore}
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-primary">Resume Quality Index</h4>
+                <p className="text-xs text-on-surface-variant font-medium mt-0.5">
+                  {resume.aiFeedback.summary || 'Your resume has been audited.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Pros */}
+            {resume.aiFeedback.pros && resume.aiFeedback.pros.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Key Strengths</span>
+                <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-green-50/30 border border-green-100 p-4 rounded-xl">
+                  {resume.aiFeedback.pros.map((p, idx) => (
+                    <li key={idx} className="leading-relaxed text-xs">{p}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Cons */}
+            {resume.aiFeedback.cons && resume.aiFeedback.cons.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-red-700 uppercase tracking-wider">Areas for Improvement</span>
+                <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-red-50/30 border border-red-100 p-4 rounded-xl">
+                  {resume.aiFeedback.cons.map((c, idx) => (
+                    <li key={idx} className="leading-relaxed text-xs">{c}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Recommendations */}
+            {resume.aiFeedback.recommendations && resume.aiFeedback.recommendations.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">Actionable Recommendations</span>
+                <ul className="list-decimal list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                  {resume.aiFeedback.recommendations.map((r, idx) => (
+                    <li key={idx} className="leading-relaxed text-xs">{r}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <button 
+              onClick={() => setIsAuditModalOpen(false)}
+              className="w-full mt-2 py-3.5 bg-primary text-on-primary text-xs font-bold rounded-full hover:scale-[1.01] transition-transform shadow-md uppercase tracking-wider cursor-pointer text-center"
+            >
+              Close Report
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* AI Tailoring Form Modal */}
+      {isTailoringModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-surface-container max-w-md w-full rounded-[2rem] p-8 border border-outline-variant/30 shadow-2xl flex flex-col gap-5 relative">
+            <div className="flex justify-between items-center border-b border-outline-variant/10 pb-3">
+              <h3 className="text-2xl font-bold text-primary font-playfair flex items-center gap-2">
+                <Sparkles className="text-secondary" size={24} fill="currentColor" />
+                Tailor Profile
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsTailoringModalOpen(false);
+                  setCampaignName('');
+                  setJobDescription('');
+                }} 
+                className="p-1 hover:bg-surface-variant/20 rounded-full cursor-pointer text-on-surface-variant"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <p className="text-xs text-on-surface-variant font-medium italic">
+              Input a job description and name the target company. The AI will tailor your profile section details to align with the role.
+            </p>
+
+            <form onSubmit={handleCreateCampaign} className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Target Company / Campaign Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Google"
+                  required
+                  value={campaignName}
+                  onChange={(e) => setCampaignName(e.target.value)}
+                  className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition text-primary font-medium placeholder-on-surface-variant/40"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Job Description</label>
+                <textarea 
+                  placeholder="Paste the full job description or requirements here..."
+                  required
+                  rows={6}
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition text-primary font-medium placeholder-on-surface-variant/40 resize-none text-xs"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsTailoringModalOpen(false);
+                    setCampaignName('');
+                    setJobDescription('');
+                  }}
+                  className="flex-1 px-4 py-3 rounded-full border border-outline-variant/30 text-xs font-bold text-on-surface-variant hover:bg-surface-variant/10 transition-all uppercase tracking-wider cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={tailoring || !campaignName || !jobDescription}
+                  className="flex-1 px-4 py-3 rounded-full bg-primary text-on-primary text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                >
+                  {tailoring ? <Loader2 className="animate-spin" size={14} /> : null}
+                  <span>{tailoring ? 'Tailoring...' : 'Tailor Profile'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Campaign Details / Feedback Modal */}
+      {selectedCampaign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-surface-container max-w-lg w-full rounded-[2rem] p-8 border border-outline-variant/30 shadow-2xl flex flex-col gap-5 relative max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-outline-variant/10 pb-3">
+              <h3 className="text-2xl font-bold text-primary font-playfair flex items-center gap-2">
+                <Sparkles className="text-secondary" size={24} fill="currentColor" />
+                Campaign Feedback: {selectedCampaign.name.toUpperCase()}
+              </h3>
+              <button onClick={() => setSelectedCampaign(null)} className="p-1 hover:bg-surface-variant/20 rounded-full cursor-pointer text-on-surface-variant">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 bg-secondary/10 px-5 py-4 rounded-2xl border border-secondary/20">
+              <div className="w-14 h-14 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-2xl shrink-0">
+                {selectedCampaign.tailoredScore || 0}%
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-primary">Job Alignment Score</h4>
+                <p className="text-xs text-on-surface-variant font-medium mt-0.5">
+                  {selectedCampaign.tailoredFeedback?.summary || 'Candidate details match the target role.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Gaps */}
+            {selectedCampaign.tailoredFeedback?.gaps && selectedCampaign.tailoredFeedback.gaps.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-red-700 uppercase tracking-wider">Identified Qualification Gaps</span>
+                <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-red-50/30 border border-red-100 p-4 rounded-xl">
+                  {selectedCampaign.tailoredFeedback.gaps.map((gap, idx) => (
+                    <li key={idx} className="leading-relaxed text-xs">{gap}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Modifications */}
+            {selectedCampaign.tailoredFeedback?.modifications && selectedCampaign.tailoredFeedback.modifications.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">AI Tailoring Adjustments Made</span>
+                <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                  {selectedCampaign.tailoredFeedback.modifications.map((mod, idx) => (
+                    <li key={idx} className="leading-relaxed text-xs">{mod}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex gap-4 mt-2">
+              <button 
+                onClick={() => handleCopyCampaignLink(selectedCampaign)}
+                className="flex-1 py-3 border border-outline-variant/30 rounded-full text-xs font-bold text-primary hover:bg-surface-variant/20 transition-all uppercase tracking-wider cursor-pointer text-center flex items-center justify-center gap-1.5"
+              >
+                {copiedCampaignId === selectedCampaign._id ? (
+                  <>
+                    <Check size={14} className="text-green-600" />
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} />
+                    <span>Copy Campaign Link</span>
+                  </>
+                )}
+              </button>
+              <button 
+                onClick={() => setSelectedCampaign(null)}
+                className="flex-1 py-3 bg-primary text-on-primary text-xs font-bold rounded-full hover:opacity-90 transition-opacity uppercase tracking-wider cursor-pointer text-center"
+              >
+                Close Feedback
               </button>
             </div>
           </div>

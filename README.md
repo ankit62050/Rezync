@@ -19,9 +19,14 @@
 - 👤 **Seamless Authentication:** Secured by Clerk (Google, GitHub, and Email/Password).
 - 📁 **Cloud Resume Storage:** Resumes are securely uploaded and stored in Cloudinary.
 - 🔗 **Custom Slugs:** Generate professional, easy-to-remember short-links (e.g., `/p/johndoe`).
-- 🔄 **Version Control:** Upload new versions of your resume, keep a history of revisions, write change-logs/notes, and toggle the active public version with one click.
-- 📊 **Rich Analytics:** Monitor real-time page views, unique visitors, referrers (LinkedIn, Twitter, email, etc.), and contact-clicks.
-- 📱 **Responsive Design:** Premium UI built with Next.js App Router and Tailwind CSS, fully optimized for mobile, tablet, and desktop screens.
+- 🔄 **Version Control:** Upload new versions of your resume, keep history of revisions, and switch active versions with one click.
+- 📊 **Advanced Analytics & Scroll Tracking:** Upgrade standard view counters to log the exact time in seconds spent by hiring managers on specific sections (Summary, Experience, Projects, Skills, Education) using the **Intersection Observer API**.
+- 🧠 **AI Career Suite (Gemini Integrated):**
+  - **AI Resume Audit**: Auto-scores resume out of 100 points, detailing key strengths, weaknesses, and recommendations.
+  - **AI Job Tailoring**: Rewrite profile details to align with a specific Job Description without fabricating experience.
+  - **Trackable Campaign Links**: Instantly generate and manage campaign URLs (e.g., `?ref=google`) that serve tailored resume content and log campaign-specific views.
+- 🖼️ **Dynamic OG Link Previews:** Automatically generates a professional unfurl preview card using Next.js `ImageResponse` showing candidate name, role, document title, and branding to build trust on LinkedIn and WhatsApp.
+- 📱 **Responsive Design:** Premium UI built with Next.js App Router and Tailwind CSS, optimized for all screens.
 - 🔒 **Security-First:** Custom middlewares for route protection, input validations, CORS, and Helmet headers.
 
 ---
@@ -114,23 +119,29 @@ The Next.js client will start at `http://localhost:3000`.
 ## 📡 API Endpoints Reference
 
 ### 1. Resumes (`/api/resumes`)
-- **GET** `/api/resumes/p/:slug` - Fetch public resume by its custom slug. *(Public)*
-- **POST** `/api/resumes/` - Upload a new resume PDF (form-data: `file`, `slug`, `title`). *(Protected)*
-- **GET** `/api/resumes/` - Fetch all resumes owned by the logged-in user. *(Protected)*
-- **GET** `/api/resumes/:id` - Fetch details of a single resume by its ID. *(Protected)*
-- **GET** `/api/resumes/check-slug/:slug` - Verify if a custom URL slug is available. *(Protected)*
-- **PUT** `/api/resumes/:id` - Upload a new version to an existing resume. *(Protected)*
+- **GET** `/api/resumes/p/:username/:slug` - Fetch public resume by username and slug. Supports campaign query parameter `?ref=name`. *(Public)*
+- **POST** `/api/resumes/` - Upload a new resume PDF (supports optional `runAI` flag). *(Protected)*
+- **GET** `/api/resumes/` - Fetch all resumes owned by the user. *(Protected)*
+- **GET** `/api/resumes/:id` - Fetch details of a single resume. *(Protected)*
+- **GET** `/api/resumes/check-slug/:slug` - Verify slug availability. *(Protected)*
+- **PUT** `/api/resumes/:id` - Upload a new version. *(Protected)*
 - **DELETE** `/api/resumes/:id` - Permanently delete a resume. *(Protected)*
 
 #### Version Management:
-- **PATCH** `/api/resumes/:id/versions/:versionId/active` - Toggle which version is public. *(Protected)*
-- **PATCH** `/api/resumes/:id/versions/:versionId/note` - Update notes/changelog for a version. *(Protected)*
-- **DELETE** `/api/resumes/:id/versions/:versionId` - Remove a specific version. *(Protected)*
+- **PATCH** `/api/resumes/:id/versions/:versionId/active` - Toggle active version. *(Protected)*
+- **PATCH** `/api/resumes/:id/versions/:versionId/note` - Update note/changelog. *(Protected)*
+- **DELETE** `/api/resumes/:id/versions/:versionId` - Remove version. *(Protected)*
+
+#### AI & Campaign Suite:
+- **POST** `/api/resumes/:id/analyze` - Run AI Resume Audit on an existing resume. *(Protected)*
+- **POST** `/api/resumes/:id/campaigns` - Generate tailored campaign sections from job description. *(Protected)*
+- **DELETE** `/api/resumes/:id/campaigns/:campaignId` - Delete campaign. *(Protected)*
 
 ### 2. Analytics (`/api/analytics`)
-- **POST** `/api/analytics/:id/click` - Logs contact button click. *(Public)*
-- **GET** `/api/analytics/` - Retrieve aggregated analytics across all user resumes. *(Protected)*
-- **GET** `/api/analytics/:id` - Retrieve detailed view/referrer analytics for a specific resume. *(Protected)*
+- **POST** `/api/analytics/:id/click` - Log contact button click. *(Public)*
+- **PUT** `/api/analytics/time/:analyticsId` - Update scroll section viewing times. *(Public)*
+- **GET** `/api/analytics/` - Retrieve user-level aggregated analytics. *(Protected)*
+- **GET** `/api/analytics/:id` - Retrieve detailed view/referrer and section-durations analytics. *(Protected)*
 
 ---
 

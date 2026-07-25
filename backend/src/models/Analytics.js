@@ -25,6 +25,11 @@ const analyticsSchema = new mongoose.Schema(
     country: {
       type: String,
     },
+    sectionTimes: {
+      type: Map,
+      of: Number,
+      default: {},
+    },
   },
   { timestamps: true }
 );

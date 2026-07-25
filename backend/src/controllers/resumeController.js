@@ -5,7 +5,7 @@ const Analytics = require('../models/Analytics');
 
 const uploadResume = async (req, res) => {
   try {
-    const { title, slug, role, isPublic, note, contactEmail, linkedinUrl, githubUrl, calendlyUrl } = req.body;
+    const { title, slug, role, isPublic, note, contactEmail, linkedinUrl, githubUrl, calendlyUrl, runAI } = req.body;
     
     if (!req.file) {
       return res.status(400).json({ message: 'No resume file uploaded' });
@@ -24,6 +24,26 @@ const uploadResume = async (req, res) => {
       folder: 'resumex',
     });
 
+    let aiScore = null;
+    let aiFeedback = null;
+    let sections = [];
+
+    if (runAI === 'true' || runAI === true) {
+      try {
+        const { parsePDF } = require('../services/pdfParser');
+        const { analyzeResumeText } = require('../services/geminiService');
+        const text = await parsePDF(req.file.buffer);
+        const analysis = await analyzeResumeText(text);
+        aiScore = analysis.score;
+        aiFeedback = analysis.feedback;
+        sections = analysis.sections;
+      } catch (aiErr) {
+        console.error('AI analysis during upload failed:', aiErr);
+        // Throw error so configuration issues (e.g. missing API key) are immediately clear
+        return res.status(400).json({ message: `AI analysis failed: ${aiErr.message}` });
+      }
+    }
+
     const fileNote = note || 'Initial Upload';
     const resume = await Resume.create({
       userId: req.user._id,
@@ -36,6 +56,9 @@ const uploadResume = async (req, res) => {
       linkedinUrl: linkedinUrl || '',
       githubUrl: githubUrl || '',
       calendlyUrl: calendlyUrl || '',
+      aiScore,
+      aiFeedback,
+      sections,
       versions: [
         {
           version: 1,
@@ -65,6 +88,8 @@ const getMyResumes = async (req, res) => {
 const getResumeBySlug = async (req, res) => {
   try {
     const { username, slug } = req.params;
+    const { ref } = req.query;
+    
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -91,19 +116,34 @@ const getResumeBySlug = async (req, res) => {
       await resume.save();
     }
 
-    const referrer = req.headers.referer || 'Direct';
+    const referrer = ref ? `Campaign: ${ref}` : (req.headers.referer || 'Direct');
     const userAgent = req.headers['user-agent'] || 'Unknown';
     
-    Analytics.create({
+    const analyticsEntry = await Analytics.create({
       resumeId: resume._id,
       referrer,
       device: userAgent,
-    }).catch(console.error);
+    });
 
     resume.views += 1;
     await resume.save();
 
-    res.json(resume);
+    const responseData = resume.toObject();
+    responseData.analyticsId = analyticsEntry._id;
+
+    if (ref) {
+      const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
+      if (campaign) {
+        responseData.activeCampaign = {
+          name: campaign.name,
+          tailoredScore: campaign.tailoredScore,
+          tailoredFeedback: campaign.tailoredFeedback,
+          sections: campaign.tailoredSections
+        };
+      }
+    }
+
+    res.json(responseData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -312,6 +352,93 @@ const deleteVersion = async (req, res) => {
   }
 };
 
+const analyzeExistingResume = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resume = await Resume.findOne({ _id: id, userId: req.user._id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found' });
+    }
+
+    const { getPDFTextFromUrl } = require('../services/pdfParser');
+    const { analyzeResumeText } = require('../services/geminiService');
+
+    const text = await getPDFTextFromUrl(resume.resumeUrl);
+    const analysis = await analyzeResumeText(text);
+
+    resume.aiScore = analysis.score;
+    resume.aiFeedback = analysis.feedback;
+    resume.sections = analysis.sections;
+
+    await resume.save();
+    res.json(resume);
+  } catch (error) {
+    console.error('Error analyzing existing resume:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const createTailoredCampaign = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, jobDescription } = req.body;
+
+    if (!name || !jobDescription) {
+      return res.status(400).json({ message: 'Campaign name and job description are required' });
+    }
+
+    const resume = await Resume.findOne({ _id: id, userId: req.user._id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found' });
+    }
+
+    const existingCampaign = resume.campaigns.find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (existingCampaign) {
+      return res.status(400).json({ message: `Campaign link '?ref=${name}' already exists. Use a different name.` });
+    }
+
+    const { getPDFTextFromUrl } = require('../services/pdfParser');
+    const { tailorResumeText } = require('../services/geminiService');
+
+    const text = await getPDFTextFromUrl(resume.resumeUrl);
+    const tailoring = await tailorResumeText(text, jobDescription);
+
+    const newCampaign = {
+      name: name.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+      jobDescription,
+      tailoredScore: tailoring.score,
+      tailoredFeedback: tailoring.feedback,
+      tailoredSections: tailoring.sections,
+      createdAt: new Date(),
+    };
+
+    resume.campaigns.push(newCampaign);
+    await resume.save();
+
+    res.status(201).json(resume);
+  } catch (error) {
+    console.error('Error tailoring resume:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteCampaign = async (req, res) => {
+  try {
+    const { id, campaignId } = req.params;
+    const resume = await Resume.findOne({ _id: id, userId: req.user._id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found' });
+    }
+
+    resume.campaigns.pull({ _id: campaignId });
+    await resume.save();
+
+    res.json(resume);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   uploadResume,
   getMyResumes,
@@ -323,4 +450,7 @@ module.exports = {
   setActiveVersion,
   updateVersionNote,
   deleteVersion,
+  analyzeExistingResume,
+  createTailoredCampaign,
+  deleteCampaign,
 };

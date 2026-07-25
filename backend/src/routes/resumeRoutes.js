@@ -12,6 +12,9 @@ const {
   setActiveVersion,
   updateVersionNote,
   deleteVersion,
+  analyzeExistingResume,
+  createTailoredCampaign,
+  deleteCampaign,
 } = require('../controllers/resumeController');
 
 const router = express.Router();
@@ -31,5 +34,10 @@ router.delete('/:id', deleteResume);
 router.patch('/:id/versions/:versionId/active', setActiveVersion);
 router.patch('/:id/versions/:versionId/note', updateVersionNote);
 router.delete('/:id/versions/:versionId', deleteVersion);
+
+// AI & Campaigns actions
+router.post('/:id/analyze', analyzeExistingResume);
+router.post('/:id/campaigns', createTailoredCampaign);
+router.delete('/:id/campaigns/:campaignId', deleteCampaign);
 
 module.exports = router;

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useDashboard } from '../layout';
 import { useRouter } from 'next/navigation';
-import { UploadCloud, ArrowLeft, Loader2, FileText, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, ArrowLeft, Loader2, FileText, CheckCircle2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 
@@ -23,6 +23,7 @@ export default function UploadResume() {
     linkedinUrl: '',
     githubUrl: '',
     calendlyUrl: '',
+    runAI: false,
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,7 @@ export default function UploadResume() {
       data.append('linkedinUrl', formData.linkedinUrl);
       data.append('githubUrl', formData.githubUrl);
       data.append('calendlyUrl', formData.calendlyUrl);
+      data.append('runAI', formData.runAI);
       data.append('file', file);
 
       await axios.post(`${API_URL}/resumes`, data, {
@@ -157,18 +159,35 @@ export default function UploadResume() {
             </div>
           </div>
 
-          <div className="flex items-center pt-2">
-            <input
-              id="isPublic"
-              name="isPublic"
-              type="checkbox"
-              checked={formData.isPublic}
-              onChange={handleChange}
-              className="h-5 w-5 text-primary focus:ring-secondary border-outline-variant/30 rounded cursor-pointer accent-secondary"
-            />
-            <label htmlFor="isPublic" className="ml-3 block text-sm font-bold text-on-surface-variant uppercase tracking-wider cursor-pointer">
-              Make this resume public
-            </label>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
+            <div className="flex items-center">
+              <input
+                id="isPublic"
+                name="isPublic"
+                type="checkbox"
+                checked={formData.isPublic}
+                onChange={handleChange}
+                className="h-5 w-5 text-primary focus:ring-secondary border-outline-variant/30 rounded cursor-pointer accent-secondary"
+              />
+              <label htmlFor="isPublic" className="ml-3 block text-sm font-bold text-on-surface-variant uppercase tracking-wider cursor-pointer">
+                Make this resume public
+              </label>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="runAI"
+                name="runAI"
+                type="checkbox"
+                checked={formData.runAI}
+                onChange={handleChange}
+                className="h-5 w-5 text-primary focus:ring-secondary border-outline-variant/30 rounded cursor-pointer accent-secondary"
+              />
+              <label htmlFor="runAI" className="ml-3 block text-sm font-bold text-on-surface-variant uppercase tracking-wider cursor-pointer flex items-center gap-1.5">
+                <span>Run AI Resume Audit</span>
+                <Sparkles size={14} className="text-secondary" fill="currentColor" />
+              </label>
+            </div>
           </div>
 
           <button
