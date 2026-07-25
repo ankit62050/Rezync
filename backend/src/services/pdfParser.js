@@ -12,7 +12,7 @@ const parsePDF = async (buffer) => {
     return data.text;
   } catch (error) {
     console.error('Error parsing PDF buffer:', error);
-    throw new Error('Failed to parse PDF content. Ensure the file is not corrupted.');
+    throw new Error(`Failed to parse PDF content: ${error.message}`);
   }
 };
 
