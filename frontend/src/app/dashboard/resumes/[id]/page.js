@@ -5,7 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useDashboard } from '../../layout';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Upload, Trash2, Copy, Check, Eye, Loader2, Sparkles, Pencil, FileText } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Copy, Check, Eye, Loader2, Sparkles, Pencil, FileText, X } from 'lucide-react';
 import axios from 'axios';
 
 export default function ResumeWorkspacePage() {
