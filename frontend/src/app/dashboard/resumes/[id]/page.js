@@ -5,7 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useDashboard } from '../../layout';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Upload, Trash2, Copy, Check, Eye, Loader2, Sparkles, Pencil, FileText, X } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Copy, Check, Eye, Loader2, Sparkles, Pencil, FileText, X, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 
 export default function ResumeWorkspacePage() {
@@ -51,6 +51,14 @@ export default function ResumeWorkspacePage() {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [copiedCampaignId, setCopiedCampaignId] = useState(null);
+  const [modalTab, setModalTab] = useState('feedback');
+  const [copiedSectionTitle, setCopiedSectionTitle] = useState('');
+
+  const handleCopySectionText = (text, title) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSectionTitle(title);
+    setTimeout(() => setCopiedSectionTitle(''), 2000);
+  };
 
   const { username } = useDashboard();
 
@@ -500,6 +508,7 @@ export default function ResumeWorkspacePage() {
                           <button
                             onClick={() => {
                               setSelectedCampaign(campaign);
+                              setModalTab('feedback');
                             }}
                             className="px-2 py-1.5 bg-primary text-on-primary rounded-md text-[9px] font-bold hover:opacity-90 transition-colors cursor-pointer"
                           >
@@ -968,44 +977,124 @@ export default function ResumeWorkspacePage() {
               </button>
             </div>
 
-            <div className="flex items-center gap-4 bg-secondary/10 px-5 py-4 rounded-2xl border border-secondary/20">
-              <div className="w-14 h-14 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-2xl shrink-0">
-                {selectedCampaign.tailoredScore || 0}%
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-primary">Job Alignment Score</h4>
-                <p className="text-xs text-on-surface-variant font-medium mt-0.5">
-                  {selectedCampaign.tailoredFeedback?.summary || 'Candidate details match the target role.'}
-                </p>
-              </div>
+            {/* Modal Tabs */}
+            <div className="flex border-b border-outline-variant/15 pb-1 gap-4">
+              <button
+                type="button"
+                onClick={() => setModalTab('feedback')}
+                className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                  modalTab === 'feedback'
+                    ? 'border-primary text-primary font-extrabold'
+                    : 'border-transparent text-on-surface-variant/75 hover:text-primary'
+                }`}
+              >
+                Feedback & Gaps
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab('tailoredText')}
+                className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                  modalTab === 'tailoredText'
+                    ? 'border-primary text-primary font-extrabold'
+                    : 'border-transparent text-on-surface-variant/75 hover:text-primary'
+                }`}
+              >
+                Tailored Resume Text
+              </button>
             </div>
 
-            {/* Gaps */}
-            {selectedCampaign.tailoredFeedback?.gaps && selectedCampaign.tailoredFeedback.gaps.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-xs font-bold text-red-700 uppercase tracking-wider">Identified Qualification Gaps</span>
-                <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-red-50/30 border border-red-100 p-4 rounded-xl">
-                  {selectedCampaign.tailoredFeedback.gaps.map((gap, idx) => (
-                    <li key={idx} className="leading-relaxed text-xs">{gap}</li>
-                  ))}
-                </ul>
+            {modalTab === 'feedback' && (
+              <>
+                <div className="flex items-center gap-4 bg-secondary/10 px-5 py-4 rounded-2xl border border-secondary/20">
+                  <div className="w-14 h-14 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-2xl shrink-0">
+                    {selectedCampaign.tailoredScore || 0}%
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-primary">Job Alignment Score</h4>
+                    <p className="text-xs text-on-surface-variant font-medium mt-0.5">
+                      {selectedCampaign.tailoredFeedback?.summary || 'Candidate details match the target role.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Gaps */}
+                {selectedCampaign.tailoredFeedback?.gaps && selectedCampaign.tailoredFeedback.gaps.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold text-red-700 uppercase tracking-wider">Identified Qualification Gaps</span>
+                    <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-red-50/30 border border-red-100 p-4 rounded-xl">
+                      {selectedCampaign.tailoredFeedback.gaps.map((gap, idx) => (
+                        <li key={idx} className="leading-relaxed text-xs">{gap}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Modifications */}
+                {selectedCampaign.tailoredFeedback?.modifications && selectedCampaign.tailoredFeedback.modifications.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">AI Tailoring Adjustments Made</span>
+                    <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-primary/5 border border-primary/10 p-4 rounded-xl">
+                      {selectedCampaign.tailoredFeedback.modifications.map((mod, idx) => (
+                        <li key={idx} className="leading-relaxed text-xs">{mod}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+
+            {modalTab === 'tailoredText' && (
+              <div className="flex flex-col gap-4">
+                {selectedCampaign.tailoredSections && selectedCampaign.tailoredSections.length > 0 ? (
+                  selectedCampaign.tailoredSections.map((section) => (
+                    <div key={section.title} className="bg-surface p-4 rounded-2xl border border-outline-variant/15 flex flex-col gap-2 relative">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                          {section.title}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopySectionText(section.content, section.title)}
+                          className="text-[10px] font-bold text-secondary hover:text-primary transition flex items-center gap-1 cursor-pointer bg-secondary/5 px-2.5 py-1 rounded-md"
+                        >
+                          {copiedSectionTitle === section.title ? (
+                            <>
+                              <Check size={10} className="text-green-600" />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={10} />
+                              <span>Copy Text</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <div className="text-xs text-on-surface-variant font-medium whitespace-pre-line leading-relaxed max-h-[150px] overflow-y-auto bg-surface-container-lowest/50 p-2.5 rounded-lg font-mono">
+                        {section.content}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-on-surface-variant font-medium italic text-center py-4">
+                    No tailored sections available for this campaign.
+                  </p>
+                )}
               </div>
             )}
 
-            {/* Modifications */}
-            {selectedCampaign.tailoredFeedback?.modifications && selectedCampaign.tailoredFeedback.modifications.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">AI Tailoring Adjustments Made</span>
-                <ul className="list-disc list-inside text-xs text-on-surface-variant font-medium space-y-1 bg-primary/5 border border-primary/10 p-4 rounded-xl">
-                  {selectedCampaign.tailoredFeedback.modifications.map((mod, idx) => (
-                    <li key={idx} className="leading-relaxed text-xs">{mod}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex gap-4 mt-2">
+            <div className="flex flex-col sm:flex-row gap-3 mt-2">
+              <a
+                href={`${window.location.origin}/${username}/${resume.slug}?ref=${selectedCampaign.name}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-3 bg-secondary text-on-secondary text-xs font-bold rounded-full hover:opacity-90 transition-opacity uppercase tracking-wider cursor-pointer text-center flex items-center justify-center gap-1.5"
+              >
+                <ExternalLink size={14} />
+                <span>View Tailored Profile</span>
+              </a>
               <button 
+                type="button"
                 onClick={() => handleCopyCampaignLink(selectedCampaign)}
                 className="flex-1 py-3 border border-outline-variant/30 rounded-full text-xs font-bold text-primary hover:bg-surface-variant/20 transition-all uppercase tracking-wider cursor-pointer text-center flex items-center justify-center gap-1.5"
               >
@@ -1017,15 +1106,16 @@ export default function ResumeWorkspacePage() {
                 ) : (
                   <>
                     <Copy size={14} />
-                    <span>Copy Campaign Link</span>
+                    <span>Copy Link</span>
                   </>
                 )}
               </button>
               <button 
+                type="button"
                 onClick={() => setSelectedCampaign(null)}
                 className="flex-1 py-3 bg-primary text-on-primary text-xs font-bold rounded-full hover:opacity-90 transition-opacity uppercase tracking-wider cursor-pointer text-center"
               >
-                Close Feedback
+                Close
               </button>
             </div>
           </div>
