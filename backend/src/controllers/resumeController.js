@@ -133,7 +133,7 @@ const getResumeBySlug = async (req, res) => {
 
     if (ref) {
       const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
-      if (campaign) {
+      if (campaign && campaign.isActive) {
         responseData.activeCampaign = {
           name: campaign.name,
           tailoredScore: campaign.tailoredScore,
@@ -465,8 +465,8 @@ const getTailoredPDF = async (req, res) => {
     }
 
     const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
-    if (!campaign || !campaign.tailoredSections || campaign.tailoredSections.length === 0) {
-      // No tailored data — fall back to original PDF
+    if (!campaign || !campaign.isActive || !campaign.tailoredSections || campaign.tailoredSections.length === 0) {
+      // No tailored data or campaign is inactive — fall back to original PDF
       return res.redirect(resume.resumeUrl);
     }
 
@@ -498,6 +498,28 @@ const getTailoredPDF = async (req, res) => {
   }
 };
 
+const toggleCampaignActive = async (req, res) => {
+  try {
+    const { id, campaignId } = req.params;
+    const resume = await Resume.findOne({ _id: id, userId: req.user._id });
+    if (!resume) {
+      return res.status(404).json({ message: 'Resume not found' });
+    }
+
+    const campaign = resume.campaigns.id(campaignId);
+    if (!campaign) {
+      return res.status(404).json({ message: 'Campaign not found' });
+    }
+
+    campaign.isActive = !campaign.isActive;
+    await resume.save();
+
+    res.json(resume);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   uploadResume,
   getMyResumes,
@@ -513,4 +535,5 @@ module.exports = {
   createTailoredCampaign,
   deleteCampaign,
   getTailoredPDF,
+  toggleCampaignActive,
 };

@@ -190,6 +190,21 @@ export default function ResumeWorkspacePage() {
     }
   };
 
+  const handleToggleCampaignActive = async (campaignId) => {
+    setError('');
+    try {
+      const token = await getToken();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const res = await axios.patch(`${API_URL}/resumes/${id}/campaigns/${campaignId}/active`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setResume(res.data);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to update campaign status');
+    }
+  };
+
   const handleCopyCampaignLink = async (campaign) => {
     const fullLink = `${origin}/${username}/${resume.slug}?ref=${campaign.name}`;
     try {
@@ -481,11 +496,24 @@ export default function ResumeWorkspacePage() {
                         <span className="text-xs font-bold text-primary uppercase font-mono">
                           ?ref={campaign.name}
                         </span>
-                        {campaign.tailoredScore && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-secondary/15 text-secondary">
-                            {campaign.tailoredScore}% Match
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {campaign.tailoredScore && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-secondary/15 text-secondary">
+                              {campaign.tailoredScore}% Match
+                            </span>
+                          )}
+                          <button
+                            onClick={() => handleToggleCampaignActive(campaign._id)}
+                            className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold border transition-colors cursor-pointer ${
+                              campaign.isActive
+                                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                            }`}
+                            title={campaign.isActive ? 'Deactivate Tailored Link' : 'Activate Tailored Link'}
+                          >
+                            {campaign.isActive ? 'Active' : 'Inactive'}
+                          </button>
+                        </div>
                       </div>
                       
                       <div className="flex justify-between items-center gap-4">

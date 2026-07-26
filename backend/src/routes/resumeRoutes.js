@@ -16,6 +16,7 @@ const {
   createTailoredCampaign,
   deleteCampaign,
   getTailoredPDF,
+  toggleCampaignActive,
 } = require('../controllers/resumeController');
 
 const router = express.Router();
@@ -40,6 +41,7 @@ router.delete('/:id/versions/:versionId', deleteVersion);
 // AI & Campaigns actions
 router.post('/:id/analyze', analyzeExistingResume);
 router.post('/:id/campaigns', createTailoredCampaign);
+router.patch('/:id/campaigns/:campaignId/active', toggleCampaignActive);
 router.delete('/:id/campaigns/:campaignId', deleteCampaign);
 
 module.exports = router;

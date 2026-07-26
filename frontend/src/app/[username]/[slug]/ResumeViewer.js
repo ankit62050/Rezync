@@ -61,7 +61,7 @@ export default function ResumeViewer({ username, slug }) {
   const [isOpen, setIsOpen] = useState(true);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [activeTab, setActiveTab] = useState('interactive'); // 'interactive' | 'pdf'
+  const [activeTab, setActiveTab] = useState('pdf'); // 'interactive' | 'pdf'
   const [analyticsId, setAnalyticsId] = useState(null);
   
   // Fetch tailored PDF as blob to avoid cross-origin iframe issues
