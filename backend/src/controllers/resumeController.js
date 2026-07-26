@@ -131,10 +131,13 @@ const getResumeBySlug = async (req, res) => {
     const responseData = resume.toObject();
     responseData.analyticsId = analyticsEntry._id;
 
+    const { preview } = req.query;
+    const isPreview = preview === 'true' || preview === true;
+
     let activeCampaign = null;
     if (ref) {
       const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
-      if (campaign && campaign.isActive) {
+      if (campaign && (campaign.isActive || isPreview)) {
         activeCampaign = campaign;
       }
     } else {

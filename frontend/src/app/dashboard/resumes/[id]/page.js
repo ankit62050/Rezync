@@ -1137,7 +1137,7 @@ export default function ResumeWorkspacePage() {
 
             <div className="flex flex-col sm:flex-row gap-3 mt-2">
               <a
-                href={`${window.location.origin}/${username}/${resume.slug}?ref=${selectedCampaign.name}`}
+                href={`${window.location.origin}/${username}/${resume.slug}?ref=${selectedCampaign.name}&preview=true`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-3 bg-secondary text-on-secondary text-xs font-bold rounded-full hover:opacity-90 transition-opacity uppercase tracking-wider cursor-pointer text-center flex items-center justify-center gap-1.5"
