@@ -487,72 +487,96 @@ export default function ResumeWorkspacePage() {
 
               {resume.campaigns && resume.campaigns.length > 0 ? (
                 <div className="flex flex-col gap-2 max-h-[25vh] overflow-y-auto pr-1">
-                  {resume.campaigns.map((campaign) => (
-                    <div
-                      key={campaign._id}
-                      className="flex flex-col gap-2 bg-surface rounded-xl p-3 border border-outline-variant/15 hover:border-outline-variant/30 transition-all"
-                    >
-                      <div className="flex justify-between items-center w-full">
-                        <span className="text-xs font-bold text-primary uppercase font-mono">
-                          ?ref={campaign.name}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {campaign.tailoredScore && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-secondary/15 text-secondary">
-                              {campaign.tailoredScore}% Match
-                            </span>
-                          )}
-                          <button
-                            onClick={() => handleToggleCampaignActive(campaign._id)}
-                            className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold border transition-colors cursor-pointer ${
-                              campaign.isActive
-                                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                                : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-                            }`}
-                            title={campaign.isActive ? 'Deactivate Tailored Link' : 'Activate Tailored Link'}
-                          >
-                            {campaign.isActive ? 'Active' : 'Inactive'}
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] text-on-surface-variant font-medium italic truncate max-w-[120px]">
-                          Target: {campaign.name.toUpperCase()}
-                        </span>
-                        
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleCopyCampaignLink(campaign)}
-                            className="p-1.5 border border-outline-variant/25 hover:bg-white rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
-                            title="Copy Campaign Link"
-                          >
-                            {copiedCampaignId === campaign._id ? (
-                              <Check size={11} className="text-green-600" />
-                            ) : (
-                              <Copy size={11} />
+                  {resume.campaigns.map((campaign) => {
+                    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+                    const campaignPdfUrl = `${API_URL}/resumes/p/${username}/${resume.slug}/tailored-pdf?ref=${campaign.name}`;
+                    const isPreviewing = previewUrl === campaignPdfUrl;
+
+                    return (
+                      <div
+                        key={campaign._id}
+                        onClick={() => {
+                          setPreviewUrl(campaignPdfUrl);
+                          setPreviewVersion(`Tailored (${campaign.name})`);
+                        }}
+                        className={`flex flex-col gap-2 bg-surface rounded-xl p-3 border transition-all cursor-pointer ${
+                          isPreviewing 
+                            ? 'border-secondary shadow-xs ring-1 ring-secondary/20 bg-white' 
+                            : 'border-outline-variant/15 hover:border-outline-variant/30'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center w-full">
+                          <span className="text-xs font-bold text-primary uppercase font-mono">
+                            ?ref={campaign.name}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {campaign.tailoredScore && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-secondary/15 text-secondary">
+                                {campaign.tailoredScore}% Match
+                              </span>
                             )}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedCampaign(campaign);
-                              setModalTab('feedback');
-                            }}
-                            className="px-2 py-1.5 bg-primary text-on-primary rounded-md text-[9px] font-bold hover:opacity-90 transition-colors cursor-pointer"
-                          >
-                            Feedback
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCampaign(campaign._id)}
-                            className="p-1.5 border border-outline-variant/25 hover:bg-red-50 text-on-surface-variant hover:text-red-600 transition-colors rounded-md cursor-pointer"
-                            title="Delete Campaign"
-                          >
-                            <Trash2 size={11} />
-                          </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleCampaignActive(campaign._id);
+                              }}
+                              className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold border transition-colors cursor-pointer ${
+                                campaign.isActive
+                                  ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                  : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                              }`}
+                              title={campaign.isActive ? 'Deactivate Tailored Link' : 'Activate Tailored Link'}
+                            >
+                              {campaign.isActive ? 'Active' : 'Inactive'}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center gap-4">
+                          <span className="text-[10px] text-on-surface-variant font-medium italic truncate max-w-[120px]">
+                            Target: {campaign.name.toUpperCase()}
+                          </span>
+                          
+                          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopyCampaignLink(campaign);
+                              }}
+                              className="p-1.5 border border-outline-variant/25 hover:bg-white rounded-md text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+                              title="Copy Campaign Link"
+                            >
+                              {copiedCampaignId === campaign._id ? (
+                                <Check size={11} className="text-green-600" />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCampaign(campaign);
+                                setModalTab('feedback');
+                              }}
+                              className="px-2 py-1.5 bg-primary text-on-primary rounded-md text-[9px] font-bold hover:opacity-90 transition-colors cursor-pointer"
+                            >
+                              Feedback
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCampaign(campaign._id);
+                              }}
+                              className="p-1.5 border border-outline-variant/25 hover:bg-red-50 text-on-surface-variant hover:text-red-600 transition-colors rounded-md cursor-pointer"
+                              title="Delete Campaign"
+                            >
+                              <Trash2 size={11} />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-[11px] text-on-surface-variant font-medium italic bg-surface/40 p-3 rounded-xl border border-dashed border-outline-variant/25">

@@ -465,8 +465,8 @@ const getTailoredPDF = async (req, res) => {
     }
 
     const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
-    if (!campaign || !campaign.isActive || !campaign.tailoredSections || campaign.tailoredSections.length === 0) {
-      // No tailored data or campaign is inactive — fall back to original PDF
+    if (!campaign || !campaign.tailoredSections || campaign.tailoredSections.length === 0) {
+      // No tailored data — fall back to original PDF
       return res.redirect(resume.resumeUrl);
     }
 
