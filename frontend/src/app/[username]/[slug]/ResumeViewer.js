@@ -111,14 +111,15 @@ export default function ResumeViewer({ username, slug }) {
   const activeCampaign = resume?.activeCampaign;
 
   useEffect(() => {
-    if (!resume || !ref || !activeCampaign) return;
+    if (!resume || !activeCampaign) return;
 
     const fetchTailoredPDF = async () => {
       setTailoredPdfLoading(true);
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const campaignRef = ref || activeCampaign.name;
         const response = await axios.get(
-          `${API_URL}/resumes/p/${username}/${slug}/tailored-pdf?ref=${ref}`,
+          `${API_URL}/resumes/p/${username}/${slug}/tailored-pdf?ref=${campaignRef}`,
           { responseType: 'blob' }
         );
         const blobUrl = URL.createObjectURL(response.data);
@@ -284,7 +285,7 @@ export default function ResumeViewer({ username, slug }) {
   // Build the PDF source URL
   const buildPdfSrc = () => {
     // When a campaign is active and we have the blob, use the blob URL
-    if (ref && activeCampaign && tailoredPdfBlobUrl) {
+    if (activeCampaign && tailoredPdfBlobUrl) {
       return tailoredPdfBlobUrl;
     }
     // Otherwise use the original uploaded PDF
@@ -295,7 +296,7 @@ export default function ResumeViewer({ username, slug }) {
   };
 
   const iframeSrc = buildPdfSrc();
-  const isPdfReady = !(ref && activeCampaign && !tailoredPdfBlobUrl);
+  const isPdfReady = !(activeCampaign && !tailoredPdfBlobUrl);
 
   const showTabs = resume.sections && resume.sections.length > 0;
 

@@ -131,16 +131,26 @@ const getResumeBySlug = async (req, res) => {
     const responseData = resume.toObject();
     responseData.analyticsId = analyticsEntry._id;
 
+    let activeCampaign = null;
     if (ref) {
       const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
       if (campaign && campaign.isActive) {
-        responseData.activeCampaign = {
-          name: campaign.name,
-          tailoredScore: campaign.tailoredScore,
-          tailoredFeedback: campaign.tailoredFeedback,
-          sections: campaign.tailoredSections
-        };
+        activeCampaign = campaign;
       }
+    } else {
+      const campaign = resume.campaigns.find(c => c.isActive === true);
+      if (campaign) {
+        activeCampaign = campaign;
+      }
+    }
+
+    if (activeCampaign) {
+      responseData.activeCampaign = {
+        name: activeCampaign.name,
+        tailoredScore: activeCampaign.tailoredScore,
+        tailoredFeedback: activeCampaign.tailoredFeedback,
+        sections: activeCampaign.tailoredSections
+      };
     }
 
     res.json(responseData);
@@ -444,18 +454,6 @@ const getTailoredPDF = async (req, res) => {
     const { username, slug } = req.params;
     const { ref } = req.query;
 
-    if (!ref) {
-      // No campaign ref — redirect to original PDF
-      const user = await User.findOne({ username });
-      if (!user) return res.status(404).json({ message: 'User not found' });
-
-      const resume = await Resume.findOne({ userId: user._id, slug });
-      if (!resume || !resume.isPublic) {
-        return res.status(404).json({ message: 'Resume not found or is private' });
-      }
-      return res.redirect(resume.resumeUrl);
-    }
-
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -464,9 +462,24 @@ const getTailoredPDF = async (req, res) => {
       return res.status(404).json({ message: 'Resume not found or is private' });
     }
 
-    const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
-    if (!campaign || !campaign.tailoredSections || campaign.tailoredSections.length === 0) {
-      // No tailored data — fall back to original PDF
+    const { preview } = req.query;
+    const isPreview = preview === 'true' || preview === true;
+
+    let activeCampaign = null;
+    if (ref) {
+      const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
+      if (campaign && (campaign.isActive || isPreview)) {
+        activeCampaign = campaign;
+      }
+    } else {
+      const campaign = resume.campaigns.find(c => c.isActive === true);
+      if (campaign) {
+        activeCampaign = campaign;
+      }
+    }
+
+    if (!activeCampaign || !activeCampaign.tailoredSections || activeCampaign.tailoredSections.length === 0) {
+      // No active tailored campaign — fall back to original PDF
       return res.redirect(resume.resumeUrl);
     }
 
@@ -478,7 +491,7 @@ const getTailoredPDF = async (req, res) => {
       email: resume.contactEmail || '',
       linkedin: resume.linkedinUrl || '',
       github: resume.githubUrl || '',
-      sections: campaign.tailoredSections,
+      sections: activeCampaign.tailoredSections,
     });
 
     res.removeHeader('X-Frame-Options');
@@ -511,7 +524,16 @@ const toggleCampaignActive = async (req, res) => {
       return res.status(404).json({ message: 'Campaign not found' });
     }
 
-    campaign.isActive = !campaign.isActive;
+    const newActiveState = !campaign.isActive;
+
+    // If making active, deactivate all other campaigns of this resume
+    if (newActiveState) {
+      resume.campaigns.forEach(c => {
+        c.isActive = false;
+      });
+    }
+
+    campaign.isActive = newActiveState;
     await resume.save();
 
     res.json(resume);
