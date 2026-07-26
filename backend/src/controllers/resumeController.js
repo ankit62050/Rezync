@@ -439,6 +439,65 @@ const deleteCampaign = async (req, res) => {
   }
 };
 
+const getTailoredPDF = async (req, res) => {
+  try {
+    const { username, slug } = req.params;
+    const { ref } = req.query;
+
+    if (!ref) {
+      // No campaign ref — redirect to original PDF
+      const user = await User.findOne({ username });
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      const resume = await Resume.findOne({ userId: user._id, slug });
+      if (!resume || !resume.isPublic) {
+        return res.status(404).json({ message: 'Resume not found or is private' });
+      }
+      return res.redirect(resume.resumeUrl);
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const resume = await Resume.findOne({ userId: user._id, slug }).populate('userId', 'name email');
+    if (!resume || !resume.isPublic) {
+      return res.status(404).json({ message: 'Resume not found or is private' });
+    }
+
+    const campaign = resume.campaigns.find(c => c.name.toLowerCase() === ref.toLowerCase());
+    if (!campaign || !campaign.tailoredSections || campaign.tailoredSections.length === 0) {
+      // No tailored data — fall back to original PDF
+      return res.redirect(resume.resumeUrl);
+    }
+
+    const { generateResumePDF } = require('../services/pdfGenerator');
+
+    const pdfBuffer = await generateResumePDF({
+      candidateName: resume.userId?.name || username,
+      role: resume.role || '',
+      email: resume.contactEmail || '',
+      linkedin: resume.linkedinUrl || '',
+      github: resume.githubUrl || '',
+      sections: campaign.tailoredSections,
+    });
+
+    res.removeHeader('X-Frame-Options');
+    res.removeHeader('Content-Security-Policy');
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Length': pdfBuffer.length,
+      'Content-Disposition': `inline; filename="${username}-tailored-resume.pdf"`,
+      'Cache-Control': 'public, max-age=3600',
+      'X-Frame-Options': 'ALLOWALL',
+    });
+
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating tailored PDF:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   uploadResume,
   getMyResumes,
@@ -453,4 +512,5 @@ module.exports = {
   analyzeExistingResume,
   createTailoredCampaign,
   deleteCampaign,
+  getTailoredPDF,
 };

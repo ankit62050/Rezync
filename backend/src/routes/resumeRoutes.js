@@ -15,11 +15,13 @@ const {
   analyzeExistingResume,
   createTailoredCampaign,
   deleteCampaign,
+  getTailoredPDF,
 } = require('../controllers/resumeController');
 
 const router = express.Router();
 
 router.get('/p/:username/:slug', getResumeBySlug);
+router.get('/p/:username/:slug/tailored-pdf', getTailoredPDF);
 
 router.use(requireAuthMiddleware, syncUser);
 

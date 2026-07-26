@@ -63,6 +63,10 @@ export default function ResumeViewer({ username, slug }) {
   const [isMobile, setIsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState('interactive'); // 'interactive' | 'pdf'
   const [analyticsId, setAnalyticsId] = useState(null);
+  
+  // Fetch tailored PDF as blob to avoid cross-origin iframe issues
+  const [tailoredPdfBlobUrl, setTailoredPdfBlobUrl] = useState(null);
+  const [tailoredPdfLoading, setTailoredPdfLoading] = useState(false);
 
   // Intersection Observer Scroll Tracking Refs
   const sectionRefs = useRef({});
@@ -105,6 +109,37 @@ export default function ResumeViewer({ username, slug }) {
   }, [username, slug, ref]);
 
   const activeCampaign = resume?.activeCampaign;
+
+  useEffect(() => {
+    if (!resume || !ref || !activeCampaign) return;
+
+    const fetchTailoredPDF = async () => {
+      setTailoredPdfLoading(true);
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const response = await axios.get(
+          `${API_URL}/resumes/p/${username}/${slug}/tailored-pdf?ref=${ref}`,
+          { responseType: 'blob' }
+        );
+        const blobUrl = URL.createObjectURL(response.data);
+        setTailoredPdfBlobUrl(blobUrl);
+      } catch (err) {
+        console.error('Failed to fetch tailored PDF:', err);
+      } finally {
+        setTailoredPdfLoading(false);
+      }
+    };
+
+    fetchTailoredPDF();
+
+    return () => {
+      if (tailoredPdfBlobUrl) {
+        URL.revokeObjectURL(tailoredPdfBlobUrl);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resume, ref, activeCampaign, username, slug]);
+
   const sectionsToTrack = activeCampaign?.sections || resume?.sections || [];
 
   // 1. Intersection Observer Effect for Scroll Focus
@@ -246,9 +281,21 @@ export default function ResumeViewer({ username, slug }) {
 
   const hasContactInfo = resume.contactEmail || resume.linkedinUrl || resume.githubUrl || resume.calendlyUrl;
 
-  const iframeSrc = isMobile
-    ? `https://docs.google.com/gview?url=${encodeURIComponent(resume.resumeUrl)}&embedded=true`
-    : resume.resumeUrl;
+  // Build the PDF source URL
+  const buildPdfSrc = () => {
+    // When a campaign is active and we have the blob, use the blob URL
+    if (ref && activeCampaign && tailoredPdfBlobUrl) {
+      return tailoredPdfBlobUrl;
+    }
+    // Otherwise use the original uploaded PDF
+    if (isMobile) {
+      return `https://docs.google.com/gview?url=${encodeURIComponent(resume.resumeUrl)}&embedded=true`;
+    }
+    return resume.resumeUrl;
+  };
+
+  const iframeSrc = buildPdfSrc();
+  const isPdfReady = !(ref && activeCampaign && !tailoredPdfBlobUrl);
 
   const showTabs = resume.sections && resume.sections.length > 0;
 
@@ -306,19 +353,23 @@ export default function ResumeViewer({ username, slug }) {
         {/* PDF VIEW CONTAINER */}
         {activeTab === 'pdf' && (
           <div className="w-full h-full relative">
-            {!iframeLoaded && (
+            {(!iframeLoaded || !isPdfReady) && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-background z-30 transition-opacity duration-300">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-                <p className="text-xs font-bold text-primary uppercase tracking-widest animate-pulse font-hanken">Loading PDF Document...</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest animate-pulse font-hanken">
+                  {tailoredPdfLoading ? 'Generating Tailored PDF...' : 'Loading PDF Document...'}
+                </p>
               </div>
             )}
 
-            <iframe
-              src={iframeSrc}
-              className={`w-full h-full border-none transition-opacity duration-500 ${iframeLoaded ? 'opacity-100' : 'opacity-0'}`}
-              title="Resume PDF"
-              onLoad={() => setIframeLoaded(true)}
-            />
+            {isPdfReady && (
+              <iframe
+                src={iframeSrc}
+                className={`w-full h-full border-none transition-opacity duration-500 ${iframeLoaded ? 'opacity-100' : 'opacity-0'}`}
+                title="Resume PDF"
+                onLoad={() => setIframeLoaded(true)}
+              />
+            )}
           </div>
         )}
 
