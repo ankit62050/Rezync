@@ -54,6 +54,7 @@ const LinkedinIcon = ({ size = 16 }) => (
 export default function ResumeViewer({ username, slug }) {
   const searchParams = useSearchParams();
   const ref = searchParams.get('ref');
+  const preview = searchParams.get('preview');
 
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -82,7 +83,10 @@ export default function ResumeViewer({ username, slug }) {
     const fetchResume = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const urlParams = ref ? `?ref=${ref}` : '';
+        const params = new URLSearchParams();
+        if (ref) params.append('ref', ref);
+        if (preview) params.append('preview', preview);
+        const urlParams = params.toString() ? `?${params.toString()}` : '';
         const res = await axios.get(`${API_URL}/resumes/p/${username}/${slug}${urlParams}`);
         
         setResume(res.data);
@@ -97,7 +101,6 @@ export default function ResumeViewer({ username, slug }) {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
         setError(err.response?.data?.message || `Failed to connect to backend: ${err.message}`);
         setLoading(false);
       }
@@ -106,7 +109,7 @@ export default function ResumeViewer({ username, slug }) {
     if (username && slug) {
       fetchResume();
     }
-  }, [username, slug, ref]);
+  }, [username, slug, ref, preview]);
 
   const activeCampaign = resume?.activeCampaign;
 
@@ -118,8 +121,12 @@ export default function ResumeViewer({ username, slug }) {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
         const campaignRef = ref || activeCampaign.name;
+        const params = new URLSearchParams();
+        params.append('ref', campaignRef);
+        if (preview) params.append('preview', preview);
+        
         const response = await axios.get(
-          `${API_URL}/resumes/p/${username}/${slug}/tailored-pdf?ref=${campaignRef}`,
+          `${API_URL}/resumes/p/${username}/${slug}/tailored-pdf?${params.toString()}`,
           { responseType: 'blob' }
         );
         const blobUrl = URL.createObjectURL(response.data);
@@ -139,7 +146,7 @@ export default function ResumeViewer({ username, slug }) {
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resume, ref, activeCampaign, username, slug]);
+  }, [resume, ref, activeCampaign, username, slug, preview]);
 
   const sectionsToTrack = activeCampaign?.sections || resume?.sections || [];
 
