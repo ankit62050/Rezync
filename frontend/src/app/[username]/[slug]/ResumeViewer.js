@@ -301,54 +301,8 @@ export default function ResumeViewer({ username, slug }) {
 
   return (
     <div className="w-screen h-screen overflow-hidden m-0 p-0 bg-background relative flex flex-col font-hanken">
-      {/* Top Header Dock */}
-      <div className="w-full bg-surface-container-low border-b border-outline-variant/15 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 z-40">
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-xl text-primary inline-flex items-baseline">
-            re<span className="wordmark-x">zync</span>
-          </span>
-          <div className="hidden sm:block w-px h-6 bg-outline-variant/20"></div>
-          <div className="flex flex-col">
-            <h1 className="text-sm font-bold text-primary truncate max-w-[200px]" title={resume.title}>
-              {resume.title}
-            </h1>
-            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest leading-none mt-0.5">
-              Candidate Portfolio
-            </span>
-          </div>
-        </div>
-
-        {/* View Switch Tabs */}
-        {showTabs && (
-          <div className="flex bg-surface-container rounded-full p-1 border border-outline-variant/20 shadow-sm shrink-0">
-            <button
-              onClick={() => setActiveTab('interactive')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all uppercase tracking-wider ${
-                activeTab === 'interactive'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              <Sparkles size={14} />
-              <span>Interactive Profile</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('pdf')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all uppercase tracking-wider ${
-                activeTab === 'pdf'
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              <Layout size={14} />
-              <span>PDF Document</span>
-            </button>
-          </div>
-        )}
-      </div>
-
       {/* Main Content Pane */}
-      <div className="flex-grow w-full h-[calc(100vh-80px)] overflow-hidden relative bg-surface-container-lowest">
+      <div className="flex-grow w-full h-screen overflow-hidden relative bg-surface-container-lowest">
         
         {/* PDF VIEW CONTAINER */}
         {activeTab === 'pdf' && (
